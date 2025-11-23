@@ -64,7 +64,11 @@ class HudEditor : KnitScreen("HUD Editor") {
                 drawHollowRect(context, -2, -3, element.width, element.height, borderColor)
                 context.fill(-2,-3, element.width, element.height, Color(30, 35, 45, alpha).rgb)
 
-                context.drawString(KnitClient.client.font, element.text, 0, 0, 0xFFFFFF)
+                val lines = element.text.split("\n")
+                lines.forEachIndexed { index, line ->
+                    val textY = (index * KnitClient.client.font.lineHeight)
+                    context.drawString(KnitClient.client.font, line, 0, textY, 0xFFFFFF)
+                }
             }
 
             //#if MC >= 1.21.7

@@ -1,6 +1,7 @@
 package xyz.meowing.krypt.features.general
 
 import net.minecraft.client.gui.GuiGraphics
+import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
 import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
@@ -18,17 +19,19 @@ import xyz.meowing.krypt.hud.HudEditor
 import xyz.meowing.krypt.hud.HudManager
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
-import xyz.meowing.krypt.utils.Utils.removeFormatting
 import xyz.meowing.krypt.utils.Utils.toTimerFormat
 import xyz.meowing.krypt.utils.rendering.Render2D
 
 @Module
-object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) {
+object TickTimers : Feature(
+    "tickTimers",
+    island = SkyBlockIsland.THE_CATACOMBS
+) {
     private const val NAME = "Tick Timers"
-    private var secretTicksToggled by ConfigDelegate<Boolean>("tickTimers.secretTicks")
-    private var stormTicksToggled by ConfigDelegate<Boolean>("tickTimers.stormTicks")
-    private var purplePadTimerToggled by ConfigDelegate<Boolean>("tickTimers.purplePadTimer")
-    private var goldorTicksToggled by ConfigDelegate<Boolean>("tickTimers.goldorTicks")
+    private val secretTicksToggled by ConfigDelegate<Boolean>("tickTimers.secretTicks")
+    private val stormTicksToggled by ConfigDelegate<Boolean>("tickTimers.stormTicks")
+    private val purplePadTimerToggled by ConfigDelegate<Boolean>("tickTimers.purplePadTimer")
+    private val goldorTicksToggled by ConfigDelegate<Boolean>("tickTimers.goldorTicks")
 
     private var secretTicks = 20
     private var stormTicks = 20
@@ -41,7 +44,8 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
 
     override fun addConfig() {
         ConfigManager
-            .addFeature("Phase Tick Timers",
+            .addFeature(
+                "Phase tick timers",
                 "Shows the ticks of the current phase.",
                 "General",
                 ConfigElement(
@@ -49,30 +53,35 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
                     ElementType.Switch(false)
                 )
             )
-            .addFeatureOption("Secret Ticks",
+            .addFeatureOption(
+                "Secret ticks",
                 ConfigElement(
                     "tickTimers.secretTicks",
                     ElementType.Switch(false)
                 )
             )
-            .addFeatureOption("Storm Ticks",
+            .addFeatureOption(
+                "Storm ticks",
                 ConfigElement(
                     "tickTimers.stormTicks",
                     ElementType.Switch(false)
                 )
             )
-            .addFeatureOption("Purple Pad Timer",
+            .addFeatureOption(
+                "Purple pad timer",
                 ConfigElement(
                     "tickTimers.purplePadTimer",
                     ElementType.Switch(false)
-                ))
+                )
+            )
             // .addFeatureOption("Goldor Ticks (Coming Soon)",
             //     ConfigElement(
             //         "tickTimers.goldorTicks",
             //         ElementType.Switch(false)
             //     )
             // )
-            .addFeatureOption("HudEditor",
+            .addFeatureOption(
+                "HudEditor",
                 ConfigElement(
                     "tickTimers.hudEditor",
                     ElementType.Button("Edit Position") {
@@ -85,9 +94,9 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
     }
 
     override fun initialize() {
-        HudManager.registerCustom(NAME, 15, 10, this::hudEditorRender, "tickTimers")
-        register<GuiEvent.Render.HUD> { renderHud(it.context) }
+        HudManager.register(NAME, "§a17", "tickTimers")
 
+        register<GuiEvent.Render.HUD> { renderHud(it.context) }
 
         register<TickEvent.Server> {
             if (secretTicks > 0) secretTicks--
@@ -103,26 +112,32 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
 
             if (purplePadTicks >= 0) purplePadTicks--
         }
+
         register<ScoreboardEvent.Update> {
             secretTicks = 20
         }
+
         register<ChatEvent.Receive> { event ->
-            val message = event.message.string.removeFormatting()
+            val message = event.message.stripped
 
-            if (message.startsWith("[BOSS] Storm: Pathetic Maxor, just like expected.")) {
-                inStorm = true
-                stormTicks = 20
-                purplePadTicks = 670
-            }
-            if (message.startsWith("[BOSS] Storm: I should have known that I stood no chance.")) {
-                inStorm = false
-                inTerms = true
+            when (message) {
+                "[BOSS] Storm: Pathetic Maxor, just like expected." -> {
+                    inStorm = true
+                    stormTicks = 20
+                    purplePadTicks = 670
+                }
 
-                startTicks = 104
-                isStartTicks = true
-            }
-            if (message.startsWith("The Core entrance is opening!")) {
-                inTerms = false
+                "[BOSS] Storm: I should have known that I stood no chance." -> {
+                    inStorm = false
+                    inTerms = true
+
+                    startTicks = 104
+                    isStartTicks = true
+                }
+
+                "The Core entrance is opening!" -> {
+                    inTerms = false
+                }
             }
         }
 
@@ -131,11 +146,6 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
             inStorm = false
             isStartTicks = false
         }
-
-    }
-
-    fun hudEditorRender(context: GuiGraphics){
-        Render2D.renderStringWithShadow(context, "§a17", 0f, 0f, 1f)
     }
 
     private fun renderHud(context: GuiGraphics) {
@@ -147,10 +157,12 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
             val color = if (secretTicks <= 5) "§c" else if (secretTicks <= 10) "§6" else "§a"
             Render2D.renderStringWithShadow(context, "$color$secretTicks", x, y, scale)
         }
+
         if (stormTicksToggled && inStorm) {
             val color = if (stormTicks <= 5) "§c" else if (stormTicks <= 10) "§6" else "§a"
             Render2D.renderStringWithShadow(context, "$color$stormTicks", x, y, scale)
         }
+
         if (inStorm && purplePadTimerToggled && purplePadTicks > 0) {
             val color = if (purplePadTicks <= 20) "§c" else if (purplePadTicks <= 5*20) "§6" else "§a"
             val text = "§5Purple Pad §f: $color${(purplePadTicks / 20f).toTimerFormat()}"
