@@ -36,6 +36,8 @@ object QuizSolver : Feature(
     "quizSolver",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
+    private const val NAME = "Quiz Solver"
+
     private data class TriviaAnswer(var blockPos: BlockPos?, var isCorrect: Boolean)
 
     private val quizSolutions = mutableMapOf<String, List<String>>()
@@ -52,9 +54,6 @@ object QuizSolver : Feature(
 
     private var answerTime: Int = 0
     private var questionsStarted = false
-
-
-    private const val NAME = "Quiz Solver"
 
     init {
         NetworkUtils.fetchJson<Map<String, List<String>>>(
@@ -114,7 +113,8 @@ object QuizSolver : Feature(
     }
 
     override fun initialize() {
-        HudManager.registerCustom(NAME, 75, 10, this::hudEditorRender, "quizSolver")
+        HudManager.register(NAME, "§5Quiz §f: §c10.45s", "quizSolver.timer")
+
         register<GuiEvent.Render.HUD> { renderHud(it.context) }
 
         register<DungeonEvent.Room.Change> { event ->
@@ -223,10 +223,6 @@ object QuizSolver : Feature(
         triviaAnswers = null
     }
 
-    fun hudEditorRender(context: GuiGraphics){
-        Render2D.renderStringWithShadow(context, "§5Quiz §f: §c10.45s", 0f, 0f, 1f)
-    }
-
     private fun renderHud(context: GuiGraphics) {
         val x = HudManager.getX(NAME)
         val y = HudManager.getY(NAME)
@@ -240,6 +236,5 @@ object QuizSolver : Feature(
             val text = "§5Quiz §f: $timer"
             Render2D.renderStringWithShadow(context, text, x, y, scale)
         }
-
     }
 }
