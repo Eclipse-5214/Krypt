@@ -41,7 +41,7 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
 
     override fun addConfig() {
         ConfigManager
-            .addFeature("Tick Timers",
+            .addFeature("Phase Tick Timers",
                 "Shows the ticks of the current phase.",
                 "General",
                 ConfigElement(
@@ -66,12 +66,12 @@ object TickTimers: Feature("tickTimers", island = SkyBlockIsland.THE_CATACOMBS) 
                     "tickTimers.purplePadTimer",
                     ElementType.Switch(false)
                 ))
-            .addFeatureOption("Goldor Ticks (Coming Soon)",
-                ConfigElement(
-                    "tickTimers.goldorTicks",
-                    ElementType.Switch(false)
-                )
-            )
+            // .addFeatureOption("Goldor Ticks (Coming Soon)",
+            //     ConfigElement(
+            //         "tickTimers.goldorTicks",
+            //         ElementType.Switch(false)
+            //     )
+            // )
             .addFeatureOption("HudEditor",
                 ConfigElement(
                     "tickTimers.hudEditor",
