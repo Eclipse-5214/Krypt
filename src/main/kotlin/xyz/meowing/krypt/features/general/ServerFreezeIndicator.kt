@@ -17,14 +17,18 @@ import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.rendering.Render2D
 
 @Module
-object ServerFreezeIndicator: Feature("freezeIndicator", island = SkyBlockIsland.THE_CATACOMBS) {
+object ServerFreezeIndicator : Feature(
+    "freezeIndicator",
+    island = SkyBlockIsland.THE_CATACOMBS
+) {
     private const val NAME = "Freeze Indicator"
     private val threshold by ConfigDelegate<Double>("freezeIndicator.threshold")
     private var lastTick = System.currentTimeMillis()
 
     override fun addConfig() {
         ConfigManager
-            .addFeature("Server Freeze Indicator",
+            .addFeature(
+                "Server freeze indicator",
                 "Displays when you haven't received a server tick in a certain threshold.",
                 "General",
                 ConfigElement(
@@ -32,12 +36,15 @@ object ServerFreezeIndicator: Feature("freezeIndicator", island = SkyBlockIsland
                     ElementType.Switch(false)
                 )
             )
-            .addFeatureOption("Freeze Threshold",
+            .addFeatureOption(
+                "Freeze threshold",
                 ConfigElement(
                     "freezeIndicator.threshold",
                     ElementType.Slider(150.0, 2000.0, 500.0, false)
-                ))
-            .addFeatureOption("HudEditor",
+                )
+            )
+            .addFeatureOption(
+                "HudEditor",
                 ConfigElement(
                     "freezeIndicator.hudEditor",
                     ElementType.Button("Edit Position") {
@@ -50,16 +57,13 @@ object ServerFreezeIndicator: Feature("freezeIndicator", island = SkyBlockIsland
     }
 
     override fun initialize() {
-        HudManager.registerCustom(NAME, 30, 10, this::hudEditorRender, "freezeIndicator")
+        HudManager.register(NAME, "§c567ms", "freezeIndicator")
+
         register<GuiEvent.Render.HUD> { renderHud(it.context) }
 
         register<TickEvent.Server> {
             lastTick = System.currentTimeMillis()
         }
-    }
-
-    fun hudEditorRender(context: GuiGraphics){
-        Render2D.renderStringWithShadow(context, "§c567ms", 0f, 0f, 1f)
     }
 
     private fun renderHud(context: GuiGraphics) {
