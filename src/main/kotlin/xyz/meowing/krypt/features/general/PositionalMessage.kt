@@ -23,7 +23,7 @@ import xyz.meowing.krypt.events.core.TickEvent
 
 @Module
 object PositionalMessage : Feature(
-    "posMsg",
+    "positionalMsg",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
     override fun addConfig() {
@@ -31,7 +31,10 @@ object PositionalMessage : Feature(
             "Positional message",
             "use \"/krypt pos help\" for more info",
             "General",
-            ConfigElement("posMsg", ElementType.Switch(false))
+            ConfigElement(
+                "positionalMsg",
+                ElementType.Switch(false)
+            )
         )
     }
 
@@ -47,8 +50,9 @@ object PositionalMessage : Feature(
     private var currentConfig: String = "default"
 
     override fun initialize() {
-        if(!config.has("config")) config.addProperty("config", "default")
+        if (!config.has("config")) config.addProperty("config", "default")
         switchConfig(config.get("config").asString)
+
         register<RenderEvent.World.Last> { event ->
             if (!DungeonAPI.inBoss) return@register
 
@@ -64,8 +68,9 @@ object PositionalMessage : Feature(
                 )
             }
         }
+
         register<TickEvent.Client> { _ ->
-            if(!DungeonAPI.inBoss) return@register
+            if (!DungeonAPI.inBoss) return@register
             val playerPos = player?.position() ?: return@register
 
             for (entry in posMsgList) {
@@ -92,7 +97,7 @@ object PositionalMessage : Feature(
     }
 
     fun removePos(index: Int) {
-        if(index !in posMsgList.indices) {
+        if (index !in posMsgList.indices) {
             KnitChat.fakeMessage("Index exceeds current list size: ${posMsgList.size}")
             return
         }

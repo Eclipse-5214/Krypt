@@ -47,6 +47,8 @@ object DungeonMap : Feature(
     val secretsTextSecretsColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextSecretsColor")
     val coolText by ConfigDelegate<Boolean>("dungeonMap.coolText")
     val roomLabelScale by ConfigDelegate<Double>("dungeonMap.roomLabelScale")
+    val renderPuzzleIcons by ConfigDelegate<Boolean>("dungeonMap.renderPuzzleIcons")
+    val puzzleIconScale by ConfigDelegate<Double>("dungeonMap.puzzleIconScale")
 
     val showClearedRoomCheckmarks by ConfigDelegate<Boolean>("dungeonMap.showClearedRoomCheckmarks")
     val clearedRoomCheckmarkScale by ConfigDelegate<Double>("dungeonMap.clearedRoomCheckmarkScale")
@@ -196,7 +198,7 @@ object DungeonMap : Feature(
                     "dungeonMap.puzzleCheckmarkMode",
                     ElementType.Dropdown(
                         listOf("Nothing", "Name Only", "Secrets Only", "Name & Secrets"),
-                        3
+                        0
                     )
                 )
             )
@@ -206,7 +208,7 @@ object DungeonMap : Feature(
                     "dungeonMap.normalCheckmarkMode",
                     ElementType.Dropdown(
                         listOf("Nothing", "Name Only", "Secrets Only", "Name & Secrets"),
-                        2
+                        0
                     )
                 )
             )
@@ -277,13 +279,27 @@ object DungeonMap : Feature(
                 "Show room checkmarks",
                 ConfigElement(
                     "dungeonMap.showClearedRoomCheckmarks",
-                    ElementType.Switch(false)
+                    ElementType.Switch(true)
                 )
             )
             .addFeatureOption(
                 "Room checkmark scale",
                 ConfigElement(
                     "dungeonMap.clearedRoomCheckmarkScale",
+                    ElementType.Slider(0.5, 2.0, 1.0, true)
+                )
+            )
+            .addFeatureOption(
+                "Render puzzle icons",
+                ConfigElement(
+                    "dungeonMap.renderPuzzleIcons",
+                    ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Puzzle icon scale",
+                ConfigElement(
+                    "dungeonMap.puzzleIconScale",
                     ElementType.Slider(0.5, 2.0, 1.0, true)
                 )
             )

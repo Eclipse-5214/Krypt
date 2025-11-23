@@ -110,10 +110,10 @@ object Render2D {
             lastCacheClear = now
         }
 
-        val textures = textureCache.getOrPut(uuid) {
+        val textures = textureCache.getOrElse(uuid) {
             //#if MC >= 1.21.9
             //$$ val profile = client.connection?.getPlayerInfo(uuid)?.profile
-            //$$ if (profile != null) {
+            //$$ val skin = if (profile != null) {
             //$$     client.skinManager
             //$$         .get(profile)
             //$$         .getNow(Optional.empty())
@@ -122,16 +122,19 @@ object Render2D {
             //$$     DefaultPlayerSkin.get(uuid)
             //$$ }
             //#else
-            SkullBlockEntity.fetchGameProfile(uuid)
+            val skin = SkullBlockEntity.fetchGameProfile(uuid)
                 .getNow(Optional.empty())
                 .map(client.skinManager::getInsecureSkin)
                 .orElseGet { DefaultPlayerSkin.get(uuid) }
             //#endif
+
+            val defaultSkin = DefaultPlayerSkin.get(uuid)
+            if (skin.texture() != defaultSkin.texture()) textureCache[uuid] = skin
+            skin
         }
 
         PlayerFaceRenderer.draw(context, textures, x, y, size)
     }
-
 
     fun drawImage(ctx: GuiGraphics, image: ResourceLocation, x: Int, y: Int, width: Int, height: Int) {
         //#if MC >= 1.21.7

@@ -43,4 +43,8 @@ object Utils {
         if (this == null) return ""
         return this.replace(formatRegex, "")
     }
+
+    fun Any?.equalsOneOf(vararg things: Any?): Boolean {
+        return things.any { this == it }
+    }
 }

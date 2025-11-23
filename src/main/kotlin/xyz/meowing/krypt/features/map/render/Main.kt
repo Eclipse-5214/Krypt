@@ -10,6 +10,7 @@ import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
 import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
+import xyz.meowing.krypt.api.dungeons.enums.map.PuzzleType
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomShape
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.features.map.DungeonMap
@@ -85,10 +86,22 @@ object Main {
             val y = (centerZ * SPACING).toInt() + ROOM_SIZE / 2 - 6
 
             val showCleared = DungeonMap.showClearedRoomCheckmarks && room.checkmark != Checkmark.UNEXPLORED
+            val isPuzzle = room.type == RoomType.PUZZLE
+
+            if (DungeonMap.renderPuzzleIcons && isPuzzle && room.checkmark == Checkmark.NONE) {
+                val puzzleName = room.name
+
+                context.pushPop {
+                    translateAndScale(context, x.toFloat(), y.toFloat(), (DungeonMap.puzzleIconScale * DungeonMap.checkmarkScale).toFloat())
+                    val offset = if (puzzleName == "Teleport Maze") -2 else 0
+                    Render2D.drawImage(context, PuzzleType.getPuzzleIcon(puzzleName), 0, offset, 12, 12)
+                }
+
+                return@forEach
+            }
 
             val checkmark = when {
-                showCleared && room.type == RoomType.PUZZLE -> room.checkmark.image
-
+                showCleared && isPuzzle -> room.checkmark.image
                 showCleared && room.checkmark in listOf(Checkmark.GREEN, Checkmark.WHITE) -> {
                     if (room.checkmark == Checkmark.GREEN) Checkmark.greenCheck else Checkmark.whiteCheck
                 }
@@ -128,7 +141,7 @@ object Main {
                 Checkmark.WHITE -> DungeonMap.roomTextClearedColor.code
                 else -> DungeonMap.roomTextNotClearedColor.code
             }
-            
+
             val secretsColor = when (room.checkmark) {
                 Checkmark.GREEN -> DungeonMap.secretsTextSecretsColor.code
                 Checkmark.WHITE -> DungeonMap.secretsTextClearedColor.code
