@@ -57,7 +57,7 @@ object PrinceAlert : Feature(
     fun displayTitle() {
         if (!enabled) return
 
-        if (showTitle) TitleUtils.showTitle(message, duration = 2000)
+        if (showTitle) TitleUtils.showTitle("§a$message", duration = 2000)
         if (sendMessage) KnitChat.sendMessage("/pc $message")
     }
 }

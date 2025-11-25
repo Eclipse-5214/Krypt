@@ -18,6 +18,7 @@ import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findOrNull
 import tech.thatgravyboat.skyblockapi.utils.regex.RegexUtils.findThenNull
 import tech.thatgravyboat.skyblockapi.utils.regex.matchWhen
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.knit.api.KnitClient.player
 import xyz.meowing.knit.api.KnitPlayer
@@ -316,7 +317,18 @@ object DungeonAPI {
 
             val entity = event.entity as? Zombie ?: return@registerIn
             if (!entity.isBaby) return@registerIn
-            if (entity.getItemBySlot(EquipmentSlot.HEAD)?.getTexture() != MIMIC_TEXTURE) return@registerIn
+
+            mimicKilled = true
+            MimicAlert.displayTitle()
+        }
+
+        EventBus.registerIn<EntityEvent.Packet.Metadata>(SkyBlockIsland.THE_CATACOMBS) { event ->
+            if (mimicKilled) return@registerIn
+            if (floor?.floorNumber !in listOf(6, 7)) return@registerIn
+
+            val entity = event.entity as? Zombie ?: return@registerIn
+            if (!entity.isBaby) return@registerIn
+            if (entity.health > 0f) return@registerIn
 
             mimicKilled = true
             MimicAlert.displayTitle()
