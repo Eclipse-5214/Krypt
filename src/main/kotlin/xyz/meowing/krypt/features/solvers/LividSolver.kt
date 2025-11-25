@@ -4,21 +4,22 @@ import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.types.ElementType
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.utils.rendering.Render3D
-import net.minecraft.world.level.block.state.BlockState
 import net.minecraft.world.level.block.Blocks
-import net.minecraft.world.entity.Entity
-import net.minecraft.world.item.DyeColor
 import net.minecraft.core.BlockPos
+import net.minecraft.world.effect.MobEffects
+import net.minecraft.world.entity.player.Player
+import net.minecraft.world.level.block.Block
 import tech.thatgravyboat.skyblockapi.utils.text.TextProperties.stripped
-import xyz.meowing.knit.api.KnitClient.world
+import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.KnitPlayer.player
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.annotations.Module
+import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.DungeonFloor
-import xyz.meowing.krypt.events.core.ChatEvent
+import xyz.meowing.krypt.events.core.EntityEvent
 import xyz.meowing.krypt.events.core.LocationEvent
 import xyz.meowing.krypt.events.core.RenderEvent
-import xyz.meowing.krypt.events.core.TickEvent
+import xyz.meowing.krypt.events.core.WorldEvent
 import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.utils.Utils.toFloatArray
@@ -31,20 +32,26 @@ object LividSolver : Feature(
     "lividSolver",
     dungeonFloor = listOf(DungeonFloor.F5, DungeonFloor.M5)
 ) {
-    private var lividEntity: Entity? = null
+    private var currentLivid = Livid.HOCKEY
     private val lividPos = BlockPos(5, 108, 42)
-    private val lividTypes = mapOf(
-        Blocks.WHITE_STAINED_GLASS to "Vendetta",
-        Blocks.MAGENTA_STAINED_GLASS to "Crossed",
-        Blocks.PINK_STAINED_GLASS to "Crossed",
-        Blocks.RED_STAINED_GLASS to "Hockey",
-        Blocks.GRAY_STAINED_GLASS to "Doctor",
-        Blocks.GREEN_STAINED_GLASS to "Frog",
-        Blocks.LIME_STAINED_GLASS to "Smile",
-        Blocks.BLUE_STAINED_GLASS to "Scream",
-        Blocks.PURPLE_STAINED_GLASS to "Purple",
-        Blocks.YELLOW_STAINED_GLASS to "Arcade"
-    )
+
+    private enum class Livid(
+        val entityName: String,
+        val block: Block
+    ) {
+        VENDETTA("Vendetta", Blocks.WHITE_STAINED_GLASS),
+        CROSSED("Crossed", Blocks.MAGENTA_STAINED_GLASS),
+        ARCADE("Arcade", Blocks.YELLOW_STAINED_GLASS),
+        SMILE("Smile", Blocks.LIME_STAINED_GLASS),
+        DOCTOR("Doctor", Blocks.GRAY_STAINED_GLASS),
+        PURPLE("Purple", Blocks.PURPLE_STAINED_GLASS),
+        SCREAM("Scream", Blocks.BLUE_STAINED_GLASS),
+        FROG("Frog", Blocks.GREEN_STAINED_GLASS),
+        HOCKEY("Hockey", Blocks.RED_STAINED_GLASS)
+        ;
+
+        var entity: Player? = null
+    }
 
     private val highlightLividColor by ConfigDelegate<Color>("highlightLivid.color")
     private val highlightLividLine by ConfigDelegate<Boolean>("highlightLivid.line")
@@ -80,14 +87,14 @@ object LividSolver : Feature(
         createCustomEvent<RenderEvent.Entity.Pre>("renderLivid") { event ->
             val entity = event.entity
 
-            if (lividEntity == entity && player?.hasLineOfSight(entity) == true) {
+            if (currentLivid.entity == entity && player?.hasLineOfSight(entity) == true) {
                 entity.glowThisFrame = true
                 entity.glowingColor = highlightLividColor.rgb
             }
         }
 
         createCustomEvent<RenderEvent.World.Last>("renderLine") { event ->
-            lividEntity?.let { entity ->
+            currentLivid.entity?.let { entity ->
                 if (player?.hasLineOfSight(entity) == true) {
                     Render3D.drawLineToEntity(
                         entity,
@@ -100,23 +107,22 @@ object LividSolver : Feature(
             }
         }
 
-        createCustomEvent<TickEvent.Server>("tick") {
-            val world = world ?: return@createCustomEvent
-            val state: BlockState = world.getBlockState(lividPos) ?: return@createCustomEvent
-            val lividType = lividTypes[state.block] ?: return@createCustomEvent
+        register<WorldEvent.BlockUpdate> { event ->
+            if (event.pos != lividPos) return@register
 
-            world.players().find { it.name.stripped.contains(lividType) }?.let {
-                lividEntity = it
-                registerRender()
-                unregisterEvent("tick")
-            }
+            currentLivid = Livid.entries.find { it.block.defaultBlockState() == event.new.block.defaultBlockState() } ?: return@register
+            registerRender()
         }
 
-        register<ChatEvent.Receive> { event ->
-            if (event.message.stripped == "[BOSS] Livid: I respect you for making it to here, but I'll be your undoing.") {
-                TickScheduler.Server.schedule(80) {
-                    registerEvent("tick")
-                }
+        register<EntityEvent.Packet.Metadata> { event ->
+            if (!DungeonAPI.inBoss) return@register
+
+            val blindnessDuration = client.player?.getEffect(MobEffects.BLINDNESS)?.duration ?: 0
+            val delay = (blindnessDuration - 20).coerceAtLeast(1).toLong()
+
+            TickScheduler.Client.schedule(delay) {
+                val player = event.entity as? Player ?: return@schedule
+                if (player.name.stripped == "${currentLivid.entityName} Livid") currentLivid.entity = player
             }
         }
 
@@ -132,8 +138,9 @@ object LividSolver : Feature(
 
     private fun unregisterRender() {
         unregisterEvent("renderLivid")
-        unregisterEvent("renderWrong")
         unregisterEvent("renderLine")
-        lividEntity = null
+
+        currentLivid = Livid.HOCKEY
+        currentLivid.entity = null
     }
 }
