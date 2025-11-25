@@ -2,7 +2,7 @@ package xyz.meowing.krypt.features.alerts
 
 import net.minecraft.world.entity.ambient.Bat
 import net.minecraft.world.entity.decoration.ArmorStand
-import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.utils.TitleUtils
 import xyz.meowing.krypt.annotations.Module

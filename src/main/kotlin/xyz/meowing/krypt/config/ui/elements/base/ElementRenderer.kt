@@ -7,7 +7,7 @@ import xyz.meowing.krypt.managers.config.ConfigElement
 import xyz.meowing.krypt.managers.config.ConfigManager
 import xyz.meowing.krypt.managers.config.OptionElement
 import xyz.meowing.krypt.config.ui.elements.MCColorCode
-import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.config.ui.elements.ButtonElement
 import xyz.meowing.krypt.config.ui.elements.ColorPickerElement
 import xyz.meowing.krypt.config.ui.elements.DropdownElement

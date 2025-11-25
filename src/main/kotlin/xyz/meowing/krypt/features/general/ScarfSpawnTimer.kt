@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.features.general
 
-import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.utils.rendering.Render3D
 import net.minecraft.world.phys.Vec3

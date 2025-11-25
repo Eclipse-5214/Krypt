@@ -1,4 +1,4 @@
-package xyz.meowing.krypt.config.ui.types
+package xyz.meowing.krypt.config.ui.elements.base
 
 import xyz.meowing.krypt.config.ui.elements.MCColorCode
 import java.awt.Color

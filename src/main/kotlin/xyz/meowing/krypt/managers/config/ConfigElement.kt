@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.managers.config
 
 import xyz.meowing.krypt.config.ui.ConfigData
-import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.config.ui.elements.base.ElementType
 
 data class ConfigElement(
     val configKey: String,

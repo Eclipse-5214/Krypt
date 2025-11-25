@@ -1,7 +1,7 @@
 package xyz.meowing.krypt.features.solvers
 
 import xyz.meowing.krypt.config.ConfigDelegate
-import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.utils.rendering.Render3D
 import net.minecraft.world.level.block.Blocks

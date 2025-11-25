@@ -13,7 +13,7 @@ import xyz.meowing.knit.api.KnitClient.client
 import xyz.meowing.knit.api.scheduler.TickScheduler
 import xyz.meowing.krypt.api.data.StoredFile
 import xyz.meowing.krypt.config.ui.ClickGUI
-import xyz.meowing.krypt.config.ui.types.ElementType
+import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.features.Feature
 import xyz.meowing.krypt.managers.feature.FeatureManager
 import xyz.meowing.krypt.utils.Utils.toColorFromMap
