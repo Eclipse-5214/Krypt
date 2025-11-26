@@ -1,11 +1,24 @@
 package xyz.meowing.krypt.api.dungeons.enums.map
 
+import xyz.meowing.krypt.features.map.DungeonMap
+import java.awt.Color
+
 enum class DoorType {
     BLOOD,
     ENTRANCE,
     WITHER,
     NORMAL
     ;
+
+    val color: Color
+        get() {
+            return when (this) {
+                BLOOD -> DungeonMap.bloodDoorColor
+                ENTRANCE -> DungeonMap.entranceDoorColor
+                WITHER -> DungeonMap.witherDoorColor
+                NORMAL -> DungeonMap.normalDoorColor
+            }
+        }
 
     companion object {
         fun fromMapColor(color: Int): DoorType? = when (color) {

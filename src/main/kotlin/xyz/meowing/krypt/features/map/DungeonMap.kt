@@ -61,6 +61,7 @@ object DungeonMap : Feature(
     val fairyRoomColor by ConfigDelegate<Color>("dungeonMap.fairyRoomColor")
     val entranceRoomColor by ConfigDelegate<Color>("dungeonMap.entranceRoomColor")
 
+    val changeDoorColorOnOpen by ConfigDelegate<Boolean>("dungeonMap.changeDoorColorOnOpen")
     val normalDoorColor by ConfigDelegate<Color>("dungeonMap.normalDoorColor")
     val witherDoorColor by ConfigDelegate<Color>("dungeonMap.witherDoorColor")
     val bloodDoorColor by ConfigDelegate<Color>("dungeonMap.bloodDoorColor")
@@ -220,6 +221,13 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
+                "Text shadow",
+                ConfigElement(
+                    "dungeonMap.textShadow",
+                    ElementType.Switch(false)
+                )
+            )
+            .addFeatureOption(
                 "Room text not cleared",
                 ConfigElement(
                     "dungeonMap.roomTextNotClearedColor",
@@ -238,13 +246,6 @@ object DungeonMap : Feature(
                 ConfigElement(
                     "dungeonMap.roomTextSecretsColor",
                     ElementType.MCColorPicker(MCColorCode.GREEN)
-                )
-            )
-            .addFeatureOption(
-                "Text shadow",
-                ConfigElement(
-                    "dungeonMap.textShadow",
-                    ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
@@ -372,6 +373,13 @@ object DungeonMap : Feature(
                 ConfigElement(
                     "dungeonMap.doorColors",
                     ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Change color on open",
+                ConfigElement(
+                    "dungeonMap.changeDoorColorOnOpen",
+                    ElementType.Switch(false)
                 )
             )
             .addFeatureOption(

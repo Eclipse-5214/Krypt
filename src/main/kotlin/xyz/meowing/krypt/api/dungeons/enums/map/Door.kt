@@ -2,9 +2,7 @@ package xyz.meowing.krypt.api.dungeons.enums.map
 
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.utils.WorldScanUtils
-import xyz.meowing.krypt.features.map.DungeonMap
 import xyz.meowing.krypt.utils.WorldUtils
-import java.awt.Color
 
 class Door(val worldPos: Pair<Int, Int>, val componentPos: Pair<Int, Int>) {
     var opened: Boolean = false
@@ -12,16 +10,6 @@ class Door(val worldPos: Pair<Int, Int>, val componentPos: Pair<Int, Int>) {
     var type: DoorType = DoorType.NORMAL
     var state = DoorState.UNDISCOVERED
     var isFairyDoor: Boolean = false
-
-    val color: Color
-        get() {
-            return when (this.type) {
-                DoorType.BLOOD -> DungeonMap.bloodDoorColor
-                DoorType.ENTRANCE -> DungeonMap.entranceDoorColor
-                DoorType.WITHER -> DungeonMap.witherDoorColor
-                DoorType.NORMAL -> DungeonMap.normalDoorColor
-            }
-        }
 
     fun getPos(): Triple<Int, Int, Int> {
         return Triple(worldPos.first, 69, worldPos.second)

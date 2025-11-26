@@ -10,10 +10,12 @@ import xyz.meowing.krypt.api.dungeons.enums.map.Room
 import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
 import xyz.meowing.krypt.api.dungeons.enums.map.DoorState
+import xyz.meowing.krypt.api.dungeons.enums.map.DoorType
 import xyz.meowing.krypt.api.dungeons.enums.map.PuzzleType
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomShape
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.features.map.DungeonMap
+import xyz.meowing.krypt.features.map.DungeonMap.changeDoorColorOnOpen
 import xyz.meowing.krypt.features.map.utils.Utils
 import xyz.meowing.krypt.utils.rendering.Render2D
 import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
@@ -59,7 +61,8 @@ object Main {
 
         DungeonAPI.uniqueDoors.forEach { door ->
             if (door.state != DoorState.DISCOVERED) return@forEach
-            val color = door.color
+            val type = if (door.opened && door.type == DoorType.WITHER && changeDoorColorOnOpen) DoorType.NORMAL else door.type
+            val color = type.color
             val (cx, cy) = door.componentPos.let { it.first / 2 * SPACING to it.second / 2 * SPACING }
             val vert = door.rotation == 0
             val (w, h) = if (vert) 6 to 4 else 4 to 6
