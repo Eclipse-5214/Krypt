@@ -36,6 +36,7 @@ object MageBeam : Feature(
     private val activeBeams = CopyOnWriteArrayList<BeamData>()
     private var currentTick = 0
 
+    private val customBeamEnabled by ConfigDelegate<Boolean>("mageBeam.customBeamEnabled")
     private val duration by ConfigDelegate<Double>("mageBeam.duration")
     private val color by ConfigDelegate<Color>("mageBeam.color")
     private val hideParticles by ConfigDelegate<Boolean>("mageBeam.hideParticles")
@@ -53,6 +54,13 @@ object MageBeam : Feature(
                 )
             )
             .addFeatureOption(
+                "Custom beam",
+                ConfigElement(
+                    "mageBeam.customBeamEnabled",
+                    ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
                 "Duration (ticks)",
                 ConfigElement(
                     "mageBeam.duration",
@@ -67,7 +75,7 @@ object MageBeam : Feature(
                 )
             )
             .addFeatureOption(
-                "Hide particles",
+                "Hide vanilla particles",
                 ConfigElement(
                     "mageBeam.hideParticles",
                     ElementType.Switch(true)
@@ -119,6 +127,8 @@ object MageBeam : Feature(
         }
 
         register<RenderEvent.World.Last> { event ->
+            if (!customBeamEnabled) return@register
+
             activeBeams.forEach { beam ->
                 if (beam.points.size < minPoints.toInt() || beam.points.isEmpty()) return@forEach
 

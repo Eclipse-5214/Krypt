@@ -270,7 +270,7 @@ object Main {
             matrix.scale(1f, 1f, 1f)
             //#endif
 
-            if (DungeonMap.showPlayerHead) {
+            if (DungeonMap.showPlayerHead && !(DungeonMap.showSelfPlayerArrow && player.name == KnitPlayer.name)) {
                 val borderColor = if (DungeonMap.iconClassColors) player.dungeonClass?.mapColor else DungeonMap.playerIconBorderColor
 
                 Render2D.drawRect(context, -6, -6, 12, 12, borderColor ?: DungeonClass.defaultColor)

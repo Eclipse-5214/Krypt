@@ -23,6 +23,7 @@ object DungeonMap : Feature(
     private const val NAME = "Dungeon Map"
 
     val showPlayerHead by ConfigDelegate<Boolean>("dungeonMap.showPlayerHead")
+    val showSelfPlayerArrow by ConfigDelegate<Boolean>("dungeonMap.showSelfPlayerArrow")
     val playerHeadsUnder by ConfigDelegate<Boolean>("dungeonMap.playerHeadsUnder")
     val iconClassColors by ConfigDelegate<Boolean>("dungeonMap.iconClassColors")
     val playerIconBorderColor by ConfigDelegate<Color>("dungeonMap.playerIconBorderColor")
@@ -91,6 +92,13 @@ object DungeonMap : Feature(
                 "Show player heads",
                 ConfigElement(
                     "dungeonMap.showPlayerHead",
+                    ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Arrow for own player",
+                ConfigElement(
+                    "dungeonMap.showSelfPlayerArrow",
                     ElementType.Switch(true)
                 )
             )
