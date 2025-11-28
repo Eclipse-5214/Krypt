@@ -3,6 +3,7 @@ package xyz.meowing.krypt.features.map.render
 import net.minecraft.client.gui.GuiGraphics
 import com.mojang.math.Axis
 import tech.thatgravyboat.skyblockapi.utils.extentions.stripColor
+import xyz.meowing.knit.api.KnitChat
 import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.dungeons.enums.DungeonClass
@@ -131,7 +132,7 @@ object Main {
 
             val checkmarkMode = when (room.type) {
                 RoomType.PUZZLE -> DungeonMap.puzzleCheckmarkMode
-                RoomType.NORMAL -> DungeonMap.normalCheckmarkMode
+                RoomType.NORMAL, RoomType.YELLOW, RoomType.TRAP, RoomType.UNKNOWN -> DungeonMap.normalCheckmarkMode
                 else -> return@forEach
             }
 
