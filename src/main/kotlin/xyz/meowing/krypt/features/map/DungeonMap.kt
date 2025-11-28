@@ -1,8 +1,10 @@
 package xyz.meowing.krypt.features.map
 
 import net.minecraft.client.gui.GuiGraphics
+import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
+import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.elements.MCColorCode
@@ -76,6 +78,12 @@ object DungeonMap : Feature(
 
     val bossMapEnabled by ConfigDelegate<Boolean>("dungeonMap.bossMap")
     val scoreMapEnabled by ConfigDelegate<Boolean>("dungeonMap.scoreMap")
+
+    fun shouldShowPlayerHeadFor(player: DungeonPlayer): Boolean {
+        if (!showPlayerHead) return false
+        if (showSelfPlayerArrow && player.name == KnitPlayer.name) return false
+        return true
+    }
 
     override fun addConfig() {
         ConfigManager

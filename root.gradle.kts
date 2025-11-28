@@ -23,56 +23,57 @@ subprojects {
 }
 
 // Line ending preservation for cross-platform compatibility
+// Helper functions for line ending management
+private val relevantExtensions = listOf("java", "kt", "kts", "json")
+
+private fun isRelevantFile(file: File) = file.isFile && relevantExtensions.contains(file.extension)
+
+private fun detectLineSeparator(text: String): String = when {
+    text.contains("\r\n") -> "\r\n"
+    text.contains("\n") -> "\n"
+    else -> System.lineSeparator()
+}
+
+private fun restoreLineEndings(file: File, originalEnding: String) {
+    val content = file.readText()
+    when {
+        originalEnding == "\r\n" && !content.contains("\r\n") && content.contains("\n") ->
+            file.writeText(content.replace("\n", "\r\n"))
+        originalEnding == "\n" && content.contains("\r\n") ->
+            file.writeText(content.replace("\r\n", "\n"))
+    }
+}
+
 val storedLineEndings = mutableMapOf<String, String>()
 var preprocessRan = false
 
 subprojects {
     tasks.withType<com.replaymod.gradle.preprocess.PreprocessTask> {
         val taskEndings = mutableMapOf<String, String>()
-        val exts = listOf("java", "kt", "kts", "json")
 
         doFirst {
             if (storedLineEndings.isEmpty()) {
                 rootProject.file("src/main").takeIf { it.exists() }?.walkTopDown()
-                    ?.filter { it.isFile && exts.contains(it.extension) }
+                    ?.filter { isRelevantFile(it) }
                     ?.forEach {
-                        storedLineEndings[it.absolutePath] = it.readText().let { c ->
-                            when {
-                                c.contains("\r\n") -> "\r\n"; c.contains("\n") -> "\n"; else -> System.lineSeparator()
-                            }
-                        }
+                        storedLineEndings[it.absolutePath] = detectLineSeparator(it.readText())
                     }
             }
             preprocessRan = true
-            outputs.files.forEach {
-                it.takeIf { it.exists() }?.walkTopDown()?.filter { it.isFile && exts.contains(it.extension) }
+            outputs.files.forEach { it ->
+                it.takeIf { it.exists() }?.walkTopDown()?.filter { isRelevantFile(it) }
                     ?.forEach {
-                        taskEndings[it.absolutePath] = it.readText().let { c ->
-                            when {
-                                c.contains("\r\n") -> "\r\n"; c.contains("\n") -> "\n"; else -> System.lineSeparator()
-                            }
-                        }
+                        taskEndings[it.absolutePath] = detectLineSeparator(it.readText())
                     }
             }
         }
 
         doLast {
-            outputs.files.forEach {
-                it.takeIf { it.exists() }?.walkTopDown()?.filter { it.isFile && exts.contains(it.extension) }
+            outputs.files.forEach { it ->
+                it.takeIf { it.exists() }?.walkTopDown()?.filter { isRelevantFile(it) }
                     ?.forEach { f ->
                         taskEndings[f.absolutePath]?.let { orig ->
-                            f.readText().let { c ->
-                                when {
-                                    orig == "\r\n" && !c.contains("\r\n") && c.contains("\n") -> f.writeText(
-                                        c.replace(
-                                            "\n",
-                                            "\r\n"
-                                        )
-                                    )
-
-                                    orig == "\n" && c.contains("\r\n") -> f.writeText(c.replace("\r\n", "\n"))
-                                }
-                            }
+                            restoreLineEndings(f, orig)
                         }
                     }
             }
@@ -85,20 +86,13 @@ gradle.taskGraph.whenReady {
         if (preprocessRan && storedLineEndings.isNotEmpty()) {
             var restored = 0
             rootProject.file("src/main").takeIf { it.exists() }?.walkTopDown()
-                ?.filter { it.isFile && listOf("java", "kt", "kts", "json").contains(it.extension) }
+                ?.filter { isRelevantFile(it) }
                 ?.forEach { f ->
                     storedLineEndings[f.absolutePath]?.let { orig ->
-                        f.readText().let { c ->
-                            when {
-                                orig == "\r\n" && !c.contains("\r\n") && c.contains("\n") -> {
-                                    f.writeText(c.replace("\n", "\r\n")); restored++
-                                }
-
-                                orig == "\n" && c.contains("\r\n") -> {
-                                    f.writeText(c.replace("\r\n", "\n")); restored++
-                                }
-                            }
-                        }
+                        val contentBefore = f.readText()
+                        restoreLineEndings(f, orig)
+                        val contentAfter = f.readText()
+                        if (contentBefore != contentAfter) restored++
                     }
                 }
             if (restored > 0) println("[Line Endings] Restored $restored files")
