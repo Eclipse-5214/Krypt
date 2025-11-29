@@ -256,7 +256,6 @@ object DungeonAPI {
                 }
 
                 endRegex.matches(message) -> {
-                    DungeonPlayerManager.updateAllSecrets()
                     floorCompleted = true
                     floor?.let { EventBus.post(DungeonEvent.End(it)) }
                 }

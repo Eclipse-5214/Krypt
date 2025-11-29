@@ -8,6 +8,7 @@ import xyz.meowing.krypt.api.dungeons.enums.DungeonPlayer
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomClearInfo
 import xyz.meowing.krypt.api.dungeons.enums.map.RoomType
 import xyz.meowing.krypt.api.dungeons.handlers.DungeonPlayerManager
+import xyz.meowing.krypt.api.hypixel.HypixelAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.events.core.DungeonEvent
@@ -35,24 +36,45 @@ object DungeonBreakdown : Feature(
 
     override fun initialize() {
         register<DungeonEvent.End> {
-            TimeScheduler.schedule(1000) {
-                KnitChat.modMessage("§fCleared room counts:")
+            val totalPlayers = DungeonPlayerManager.players.filterNotNull().size
+            if (totalPlayers == 0) return@register
 
-                DungeonPlayerManager.players.forEach { player ->
-                    if (player == null) return@forEach
+            var updatedCount = 0
 
-                    val name = player.name
-                    val secrets = player.secrets
-                    val minmax = "${player.minRooms}-${player.maxRooms}"
-                    val deaths = player.deaths
-                    val roomLore = buildRoomLore(player)
+            DungeonPlayerManager.players.filterNotNull().forEach { player ->
+                if (player.uuid == null) {
+                    updatedCount++
+                    if (updatedCount >= totalPlayers) sendBreakdown()
+                } else {
+                    HypixelAPI.fetchSecrets(player.uuid.toString(), cacheMs = 0) { secrets ->
+                        player.currSecrets = secrets
 
-                    val message = KnitText
-                        .literal("§7| §b$name §fcleared §b$minmax §frooms | §b$secrets §fsecrets | §b$deaths §fdeaths")
-                        .onHover(roomLore)
-
-                    KnitChat.fakeMessage(message)
+                        updatedCount++
+                        if (updatedCount >= totalPlayers) sendBreakdown()
+                    }
                 }
+            }
+        }
+    }
+
+    private fun sendBreakdown() {
+        TimeScheduler.schedule(100) {
+            KnitChat.modMessage("§fCleared room counts:")
+
+            DungeonPlayerManager.players.forEach { player ->
+                if (player == null) return@forEach
+
+                val name = player.name
+                val secrets = player.secrets
+                val minmax = "${player.minRooms}-${player.maxRooms}"
+                val deaths = player.deaths
+                val roomLore = buildRoomLore(player)
+
+                val message = KnitText
+                    .literal("§7| §b$name §fcleared §b$minmax §frooms | §b$secrets §fsecrets | §b$deaths §fdeaths")
+                    .onHover(roomLore)
+
+                KnitChat.fakeMessage(message)
             }
         }
     }

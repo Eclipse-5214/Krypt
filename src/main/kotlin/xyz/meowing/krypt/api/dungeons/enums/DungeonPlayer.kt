@@ -36,8 +36,8 @@ class DungeonPlayer(
     var dead: Boolean = false
         internal set
 
-    private var initSecrets: Int? = null
-    private var currSecrets: Int? = null
+    var initSecrets: Int? = null
+    var currSecrets: Int? = null
 
     val secrets get() = (currSecrets ?: initSecrets ?: 0) - (initSecrets ?: 0)
 
@@ -58,14 +58,6 @@ class DungeonPlayer(
     init {
         HypixelAPI.fetchSecrets(uuid.toString(), 120_000) { secrets ->
             initSecrets = secrets
-            currSecrets = secrets
-        }
-    }
-
-    fun updateSecrets() {
-        if (uuid == null) return
-
-        HypixelAPI.fetchSecrets(uuid.toString(), cacheMs = 0) { secrets ->
             currSecrets = secrets
         }
     }
