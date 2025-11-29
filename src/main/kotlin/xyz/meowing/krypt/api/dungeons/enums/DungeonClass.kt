@@ -1,6 +1,6 @@
 package xyz.meowing.krypt.api.dungeons.enums
 
-import xyz.meowing.krypt.features.map.DungeonMap
+import xyz.meowing.krypt.features.map.render.MapRenderConfig
 import java.awt.Color
 
 enum class DungeonClass(val displayName: String) {
@@ -15,11 +15,11 @@ enum class DungeonClass(val displayName: String) {
 
     val mapColor: Color
         get() = when (this) {
-            HEALER -> DungeonMap.healerColor
-            MAGE -> DungeonMap.mageColor
-            BERSERK -> DungeonMap.berserkColor
-            ARCHER -> DungeonMap.archerColor
-            TANK -> DungeonMap.tankColor
+            HEALER -> MapRenderConfig.healerColor
+            MAGE -> MapRenderConfig.mageColor
+            BERSERK -> MapRenderConfig.berserkColor
+            ARCHER -> MapRenderConfig.archerColor
+            TANK -> MapRenderConfig.tankColor
             else -> defaultColor
         }
 

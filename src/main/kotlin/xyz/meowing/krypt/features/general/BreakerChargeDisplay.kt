@@ -8,6 +8,7 @@ import net.minecraft.world.phys.shapes.CollisionContext
 import tech.thatgravyboat.skyblockapi.api.datatype.DataTypes
 import tech.thatgravyboat.skyblockapi.api.datatype.getData
 import xyz.meowing.knit.api.KnitClient.client
+import xyz.meowing.knit.api.KnitPlayer
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.location.SkyBlockIsland
 import xyz.meowing.krypt.config.ConfigDelegate
@@ -123,6 +124,7 @@ object BreakerChargeDisplay : Feature(
 
         register<RenderEvent.World.BlockOutline> { event ->
             if (!outlineBlocks) return@register
+            if (KnitPlayer.heldItem?.getData(DataTypes.SKYBLOCK_ID)?.skyblockId != "DUNGEONBREAKER") return@register
 
             val blockPos = event.context.blockPos() ?: return@register
             val blockState = event.context.blockState() ?: return@register

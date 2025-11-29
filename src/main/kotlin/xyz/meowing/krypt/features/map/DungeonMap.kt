@@ -1,10 +1,11 @@
 package xyz.meowing.krypt.features.map
 
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.resources.ResourceLocation
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.annotations.Module
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.api.location.SkyBlockIsland
-import xyz.meowing.krypt.config.ConfigDelegate
 import xyz.meowing.krypt.config.ui.elements.MCColorCode
 import xyz.meowing.krypt.config.ui.elements.base.ElementType
 import xyz.meowing.krypt.events.core.GuiEvent
@@ -20,63 +21,42 @@ object DungeonMap : Feature(
     "dungeonMap",
     island = SkyBlockIsland.THE_CATACOMBS
 ) {
+    val defaultMap: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "krypt/default_map")
+    val markerSelf: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "krypt/marker_self")
+    val markerOther: ResourceLocation = ResourceLocation.fromNamespaceAndPath(Krypt.NAMESPACE, "krypt/marker_other")
+
     private const val NAME = "Dungeon Map"
 
-    val showPlayerHead by ConfigDelegate<Boolean>("dungeonMap.showPlayerHead")
-    val playerHeadsUnder by ConfigDelegate<Boolean>("dungeonMap.playerHeadsUnder")
-    val iconClassColors by ConfigDelegate<Boolean>("dungeonMap.iconClassColors")
-    val playerIconBorderColor by ConfigDelegate<Color>("dungeonMap.playerIconBorderColor")
-    val playerIconBorderSize by ConfigDelegate<Double>("dungeonMap.playerIconBorderSize")
-    val showOwnPlayer by ConfigDelegate<Boolean>("dungeonMap.showOwnPlayer")
-    val showPlayerNametags by ConfigDelegate<Boolean>("dungeonMap.showPlayerNametags")
-
-    val healerColor by ConfigDelegate<Color>("dungeonMap.healerColor")
-    val mageColor by ConfigDelegate<Color>("dungeonMap.mageColor")
-    val berserkColor by ConfigDelegate<Color>("dungeonMap.berserkColor")
-    val archerColor by ConfigDelegate<Color>("dungeonMap.archerColor")
-    val tankColor by ConfigDelegate<Color>("dungeonMap.tankColor")
-
-    val puzzleCheckmarkMode by ConfigDelegate<Int>("dungeonMap.puzzleCheckmarkMode")
-    val normalCheckmarkMode by ConfigDelegate<Int>("dungeonMap.normalCheckmarkMode")
-    val checkmarkScale by ConfigDelegate<Double>("dungeonMap.checkmarkScale")
-    val roomTextNotClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.roomTextNotClearedColor")
-    val roomTextClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.roomTextClearedColor")
-    val roomTextSecretsColor by ConfigDelegate<MCColorCode>("dungeonMap.roomTextSecretsColor")
-    val secretsTextNotClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextNotClearedColor")
-    val secretsTextClearedColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextClearedColor")
-    val secretsTextSecretsColor by ConfigDelegate<MCColorCode>("dungeonMap.secretsTextSecretsColor")
-    val coolText by ConfigDelegate<Boolean>("dungeonMap.textShadow")
-    val roomLabelScale by ConfigDelegate<Double>("dungeonMap.roomLabelScale")
-    val renderPuzzleIcons by ConfigDelegate<Boolean>("dungeonMap.renderPuzzleIcons")
-    val puzzleIconScale by ConfigDelegate<Double>("dungeonMap.puzzleIconScale")
-
-    val showClearedRoomCheckmarks by ConfigDelegate<Boolean>("dungeonMap.showClearedRoomCheckmarks")
-    val clearedRoomCheckmarkScale by ConfigDelegate<Double>("dungeonMap.clearedRoomCheckmarkScale")
-
-    val normalRoomColor by ConfigDelegate<Color>("dungeonMap.normalRoomColor")
-    val puzzleRoomColor by ConfigDelegate<Color>("dungeonMap.puzzleRoomColor")
-    val trapRoomColor by ConfigDelegate<Color>("dungeonMap.trapRoomColor")
-    val yellowRoomColor by ConfigDelegate<Color>("dungeonMap.yellowRoomColor")
-    val bloodRoomColor by ConfigDelegate<Color>("dungeonMap.bloodRoomColor")
-    val fairyRoomColor by ConfigDelegate<Color>("dungeonMap.fairyRoomColor")
-    val entranceRoomColor by ConfigDelegate<Color>("dungeonMap.entranceRoomColor")
-
-    val changeDoorColorOnOpen by ConfigDelegate<Boolean>("dungeonMap.changeDoorColorOnOpen")
-    val normalDoorColor by ConfigDelegate<Color>("dungeonMap.normalDoorColor")
-    val witherDoorColor by ConfigDelegate<Color>("dungeonMap.witherDoorColor")
-    val bloodDoorColor by ConfigDelegate<Color>("dungeonMap.bloodDoorColor")
-    val entranceDoorColor by ConfigDelegate<Color>("dungeonMap.entranceDoorColor")
-
-    val mapInfoUnder by ConfigDelegate<Boolean>("dungeonMap.mapInfoUnder")
-    val mapBorder by ConfigDelegate<Boolean>("dungeonMap.mapBorder")
-    val mapBorderWidth by ConfigDelegate<Int>("dungeonMap.mapBorderWidth")
-    val mapBorderColor by ConfigDelegate<Color>("dungeonMap.mapBorderColor")
-    val mapBackgroundColor by ConfigDelegate<Color>("dungeonMap.mapBackgroundColor")
-
-    val bossMapEnabled by ConfigDelegate<Boolean>("dungeonMap.bossMap")
-    val scoreMapEnabled by ConfigDelegate<Boolean>("dungeonMap.scoreMap")
-
     override fun addConfig() {
+        addPlayerHeadConfig()
+        addClassColorConfig()
+        addRoomLabelConfig()
+        addRoomColorConfig()
+        addDoorColorConfig()
+        addMapDisplayConfig()
+    }
+
+    override fun initialize() {
+        HudManager.registerCustom(
+            NAME,
+            148,
+            158,
+            { MapRenderer.renderPreview(it, 0f, 0f) },
+            "dungeonMap"
+        )
+
+        register<GuiEvent.Render.HUD> { event -> renderMap(event.context) }
+    }
+
+    private fun renderMap(context: GuiGraphics) {
+        val x = HudManager.getX(NAME)
+        val y = HudManager.getY(NAME)
+        val scale = HudManager.getScale(NAME)
+
+        MapRenderer.render(context, x, y, scale)
+    }
+
+    private fun addPlayerHeadConfig() {
         ConfigManager
             .addFeature(
                 "Dungeon map",
@@ -99,6 +79,13 @@ object DungeonMap : Feature(
                 ConfigElement(
                     "dungeonMap.playerHeadsUnder",
                     ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Show only own head as arrow",
+                ConfigElement(
+                    "dungeonMap.showOnlyOwnHeadAsArrow",
+                    ElementType.Switch(false)
                 )
             )
             .addFeatureOption(
@@ -136,7 +123,9 @@ object DungeonMap : Feature(
                     ElementType.Switch(true)
                 )
             )
+    }
 
+    private fun addClassColorConfig() {
         ConfigManager
             .addFeature(
                 "Class colors",
@@ -182,7 +171,9 @@ object DungeonMap : Feature(
                     ElementType.ColorPicker(Color(30, 170, 50, 255))
                 )
             )
+    }
 
+    private fun addRoomLabelConfig() {
         ConfigManager
             .addFeature(
                 "Room labels",
@@ -249,6 +240,13 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
+                "Room text failed",
+                ConfigElement(
+                    "dungeonMap.roomTextFailedColor",
+                    ElementType.MCColorPicker(MCColorCode.RED)
+                )
+            )
+            .addFeatureOption(
                 "Secrets text not cleared",
                 ConfigElement(
                     "dungeonMap.secretsTextNotClearedColor",
@@ -304,7 +302,9 @@ object DungeonMap : Feature(
                     ElementType.Slider(0.5, 2.0, 1.0, true)
                 )
             )
+    }
 
+    private fun addRoomColorConfig() {
         ConfigManager
             .addFeature(
                 "Room colors",
@@ -364,7 +364,9 @@ object DungeonMap : Feature(
                     ElementType.ColorPicker(Color(20, 133, 0, 255))
                 )
             )
+    }
 
+    private fun addDoorColorConfig() {
         ConfigManager
             .addFeature(
                 "Door colors",
@@ -410,7 +412,9 @@ object DungeonMap : Feature(
                     ElementType.ColorPicker(Color(0, 204, 0, 255))
                 )
             )
+    }
 
+    private fun addMapDisplayConfig() {
         ConfigManager
             .addFeature(
                 "Map display",
@@ -426,6 +430,13 @@ object DungeonMap : Feature(
                 ConfigElement(
                     "dungeonMap.mapInfoUnder",
                     ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Map info scale",
+                ConfigElement(
+                    "dungeonMap.mapInfoScale",
+                    ElementType.Slider(0.3, 1.5, 0.6, true)
                 )
             )
             .addFeatureOption(
@@ -456,45 +467,19 @@ object DungeonMap : Feature(
                     ElementType.ColorPicker(Color(0, 0, 0, 100))
                 )
             )
-//            .addFeatureOption(
-//                "Boss map",
-//                ConfigElement(
-//                    "dungeonMap.bossMap",
-//                    ElementType.Switch(true)
-//                )
-//            )
-//            .addFeatureOption(
-//                "Score map",
-//                ConfigElement(
-//                    "dungeonMap.scoreMap",
-//                    ElementType.Switch(true)
-//                )
-//            )
-    }
-
-    override fun initialize() {
-        HudManager.registerCustom(
-            NAME,
-            148,
-            158,
-            { MapRenderer.renderPreview(it, 0f, 0f) },
-            "dungeonMap"
-        )
-
-        register<GuiEvent.Render.HUD> { event -> renderMap(event.context) }
-    }
-
-    fun renderMap(context: GuiGraphics) {
-        val x = HudManager.getX(NAME)
-        val y = HudManager.getY(NAME)
-        val scale = HudManager.getScale(NAME)
-
-        if (!DungeonAPI.inBoss) {
-            MapRenderer.render(context, x, y, scale)
-        }/* else if (bossMapEnabled && !DungeonAPI.floorCompleted) {
-            MapRenderer.renderBoss(context, x, y, scale)
-        } else if (scoreMapEnabled){
-            MapRenderer.renderScore(context, x, y, scale)
-        }*/
+            .addFeatureOption(
+                "Boss map",
+                ConfigElement(
+                    "dungeonMap.bossMap",
+                    ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
+                "Score map",
+                ConfigElement(
+                    "dungeonMap.scoreMap",
+                    ElementType.Switch(true)
+                )
+            )
     }
 }

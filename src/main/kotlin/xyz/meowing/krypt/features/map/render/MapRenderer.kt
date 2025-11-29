@@ -1,134 +1,161 @@
 package xyz.meowing.krypt.features.map.render
 
 import net.minecraft.client.gui.GuiGraphics
+import net.minecraft.resources.ResourceLocation
+import xyz.meowing.knit.api.KnitChat
+import xyz.meowing.knit.api.KnitPlayer
+import xyz.meowing.krypt.Krypt
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
 import xyz.meowing.krypt.features.map.DungeonMap
-import xyz.meowing.krypt.features.map.utils.Utils
+import xyz.meowing.krypt.features.map.render.layers.*
+import xyz.meowing.krypt.features.map.render.registry.BossMapRegistry
 import xyz.meowing.krypt.utils.rendering.Render2D
 import xyz.meowing.krypt.utils.rendering.Render2D.pushPop
 import xyz.meowing.krypt.utils.rendering.Render2D.width
 
 object MapRenderer {
-    private val defaultMapSize = Pair(138, 138)
+    private const val MAP_SIZE = 138
 
     fun render(context: GuiGraphics, x: Float, y: Float, scale: Float) {
-        val matrix = context.pose()
         context.pushPop {
-            //#if MC >= 1.21.7
-            //$$ matrix.translate(x, y)
-            //$$ matrix.scale(scale, scale)
-            //$$ matrix.translate(5f, 5f)
-            //#else
+            val matrix = context.pose()
             matrix.translate(x, y, 0f)
             matrix.scale(scale, scale, 1f)
             matrix.translate(5f, 5f, 0f)
-            //#endif
 
-            if (!DungeonAPI.floorCompleted) {
-                renderMapBackground(context)
-                Main.renderMap(context)
-                if (DungeonMap.mapInfoUnder) renderInfoUnder(context, false)
-                if (DungeonMap.mapBorder) renderMapBorder(context)
-            } else if (DungeonMap.scoreMapEnabled) {
-                renderMapBackground(context)
-                if (DungeonMap.mapInfoUnder) renderInfoUnder(context, false)
-                if (DungeonMap.mapBorder) renderMapBorder(context)
+            when {
+                DungeonAPI.floorCompleted && MapRenderConfig.scoreMapEnabled -> renderScore(context)
+                DungeonAPI.inBoss && MapRenderConfig.bossMapEnabled -> renderBoss(context)
+                !DungeonAPI.floorCompleted -> renderMain(context)
             }
-        }
-    }
 
-    fun renderBoss(context: GuiGraphics, x: Float, y: Float, scale: Float) {
-        val matrix = context.pose()
-        context.pushPop {
-            //#if MC >= 1.21.7
-            //$$ matrix.translate(x, y)
-            //$$ matrix.scale(scale, scale)
-            //#else
-            matrix.translate(x, y, 0f)
-            matrix.scale(scale, scale, 1f)
-            //#endif
-
-            renderMapBackground(context)
-            BossMapRenderer.renderBossMap(context)
-            if (DungeonMap.mapInfoUnder) renderInfoUnder(context, false)
-            if (DungeonMap.mapBorder) renderMapBorder(context)
-        }
-    }
-
-    fun renderScore(context: GuiGraphics, x: Float, y: Float, scale: Float) {
-        val matrix = context.pose()
-        context.pushPop {
-            //#if MC >= 1.21.7
-            //$$ matrix.translate(x, y)
-            //$$ matrix.scale(scale, scale)
-            //#else
-            matrix.translate(x, y, 0f)
-            matrix.scale(scale, scale, 1f)
-            //#endif
-
-            renderMapBackground(context)
-            ScoreMapRenderer.renderScoreMap(context)
-            if (DungeonMap.mapInfoUnder) renderInfoUnder(context, false)
-            if (DungeonMap.mapBorder) renderMapBorder(context)
         }
     }
 
     fun renderPreview(context: GuiGraphics, x: Float, y: Float) {
-        val matrix = context.pose()
         context.pushPop {
-            //#if MC >= 1.21.7
-            //$$ matrix.translate(x + 5f, y + 5f)
-            //#else
+            val matrix = context.pose()
             matrix.translate(x + 5f, y + 5f, 0f)
-            //#endif
 
-            renderMapBackground(context)
-            Render2D.drawImage(context, Utils.defaultMap, 5, 5, 128, 128)
-            if (DungeonMap.mapInfoUnder) renderInfoUnder(context, true)
+            renderBackground(context)
+            Render2D.drawImage(context, DungeonMap.defaultMap, 5, 5, 128, 128)
+            if (MapRenderConfig.mapInfoUnder) renderPreviewInfo(context)
         }
     }
 
-    fun renderInfoUnder(context: GuiGraphics, preview: Boolean) {
-        val matrix = context.pose()
-        var mapLine1 = DungeonAPI.mapLine1
-        var mapLine2 = DungeonAPI.mapLine2
-        if (preview) {
-            mapLine1 = "§7Secrets: §b?    §7Crypts: §c0    §7Mimic: §c✘"
-            mapLine2 = "§7Min Secrets: §b?    §7Deaths: §a0    §7Score: §c0"
-        }
-        val w1 = mapLine1.width().toFloat()
-        val w2 = mapLine2.width().toFloat()
+    private fun renderMain(context: GuiGraphics) {
+        renderBackground(context)
+        renderMainMap(context)
+        if (MapRenderConfig.mapInfoUnder) renderInfo(context)
+        if (MapRenderConfig.mapBorder) renderBorder(context)
+    }
+
+    private fun renderBoss(context: GuiGraphics) {
+        renderBackground(context)
+
+        val playerPos = KnitPlayer.player?.position() ?: return
+        val floor = DungeonAPI.floor?.floorNumber ?: return
+
+        val bossMap = BossMapRegistry.getBossMap(floor, playerPos) ?: return
+
+        BossMapLayer.render(context, bossMap)
+        if (MapRenderConfig.mapInfoUnder) renderInfo(context)
+        if (MapRenderConfig.mapBorder) renderBorder(context)
+    }
+
+    private fun renderScore(context: GuiGraphics) {
+        renderBackground(context)
+        ScoreMapLayer.render(context)
+        if (MapRenderConfig.mapInfoUnder) renderInfo(context)
+        if (MapRenderConfig.mapBorder) renderBorder(context)
+    }
+
+    private fun renderMainMap(context: GuiGraphics) {
+        val mapOffset = if (DungeonAPI.floor?.floorNumber == 1) 10.6f else 0f
+        val mapScale = getScale(DungeonAPI.floor?.floorNumber)
 
         context.pushPop {
-            //#if MC >= 1.21.7
-            //$$ matrix.translate(69f, 135f)
-            //$$ matrix.scale(0.6f, 0.6f)
-            //#else
-            matrix.translate(69f, 135f, 0f)
-            matrix.scale(0.6f, 0.6f, 1f)
-            //#endif
+            translateAndScale(context, 5f, 5f, mapScale, mapOffset)
 
-            Render2D.renderString(context, mapLine1, -w1 / 2f, 0f, 1f)
-            Render2D.renderString(context, mapLine2, -w2 / 2f, 10f, 1f)
+            RoomLayer.render(context)
+            if (!MapRenderConfig.playerHeadsUnder) PlayerLayer.render(context)
+            CheckmarkLayer.render(context)
+            LabelLayer.render(context)
+            if (MapRenderConfig.playerHeadsUnder) PlayerLayer.render(context)
         }
     }
 
-    fun renderMapBackground(context: GuiGraphics) {
-        val w = defaultMapSize.first
-        var h = defaultMapSize.second
-        h += if (DungeonMap.mapInfoUnder) 10 else 0
-        Render2D.drawRect(context, 0, 0, w, h, DungeonMap.mapBackgroundColor)
+    private fun renderBackground(context: GuiGraphics) {
+        val height = MAP_SIZE + if (MapRenderConfig.mapInfoUnder) 10 else 0
+        Render2D.drawRect(context, 0, 0, MAP_SIZE, height, MapRenderConfig.mapBackgroundColor)
     }
 
-    fun renderMapBorder(context: GuiGraphics) {
-        val (w, baseH) = defaultMapSize
-        val borderWidth = DungeonMap.mapBorderWidth
-        val h = baseH + if (DungeonMap.mapInfoUnder) 10 else 0
-        val color = DungeonMap.mapBorderColor
+    private fun renderBorder(context: GuiGraphics) {
+        val borderWidth = MapRenderConfig.mapBorderWidth
+        val height = MAP_SIZE + if (MapRenderConfig.mapInfoUnder) 10 else 0
+        val color = MapRenderConfig.mapBorderColor
 
-        Render2D.drawRect(context, -borderWidth, -borderWidth, w + borderWidth * 2, borderWidth, color)
-        Render2D.drawRect(context, -borderWidth, h, w + borderWidth * 2, borderWidth, color)
-        Render2D.drawRect(context, -borderWidth, 0, borderWidth, h, color)
-        Render2D.drawRect(context, w, 0, borderWidth, h, color)
+        Render2D.drawRect(context, -borderWidth, -borderWidth, MAP_SIZE + borderWidth * 2, borderWidth, color)
+        Render2D.drawRect(context, -borderWidth, height, MAP_SIZE + borderWidth * 2, borderWidth, color)
+        Render2D.drawRect(context, -borderWidth, 0, borderWidth, height, color)
+        Render2D.drawRect(context, MAP_SIZE, 0, borderWidth, height, color)
+    }
+
+    private fun renderInfo(context: GuiGraphics) {
+        val scale = MapRenderConfig.mapInfoScale.toFloat()
+        val line1 = DungeonAPI.mapLine1
+        val line2 = DungeonAPI.mapLine2
+
+        context.pushPop {
+            val matrix = context.pose()
+            matrix.translate(69f, 135f, 0f)
+            matrix.scale(scale, scale, 1f)
+
+            val w1 = line1.width().toFloat()
+            val w2 = line2.width().toFloat()
+
+            Render2D.renderString(context, line1, -w1 / 2f, 0f, 1f)
+            Render2D.renderString(context, line2, -w2 / 2f, 10f, 1f)
+        }
+    }
+
+    private fun renderPreviewInfo(context: GuiGraphics) {
+        val scale = MapRenderConfig.mapInfoScale.toFloat()
+        val line1 = "§7Secrets: §b?    §7Crypts: §c0    §7Mimic: §c✘"
+        val line2 = "§7Min Secrets: §b?    §7Deaths: §a0    §7Score: §c0"
+
+        context.pushPop {
+            val matrix = context.pose()
+            matrix.translate(69f, 135f, 0f)
+            matrix.scale(scale, scale, 1f)
+
+            val w1 = line1.width().toFloat()
+            val w2 = line2.width().toFloat()
+
+            Render2D.renderString(context, line1, -w1 / 2f, 0f, 1f)
+            Render2D.renderString(context, line2, -w2 / 2f, 10f, 1f)
+        }
+    }
+
+    private fun getScale(floor: Int?): Float {
+        return when (floor) {
+            null -> 1f
+            0 -> 6f / 4f
+            in 1..3 -> 6f / 5f
+            else -> 1f
+        }
+    }
+
+    fun translateAndScale(context: GuiGraphics, x: Float, y: Float, scale: Float, offsetX: Float = 0f, offsetY: Float = 0f) {
+        val matrix = context.pose()
+        //#if MC >= 1.21.8
+        //$$ matrix.translate(x, y)
+        //$$ if (offsetX != 0f || offsetY != 0f) matrix.translate(offsetX, offsetY)
+        //$$ if (scale != 1f) matrix.scale(scale, scale)
+        //#else
+        matrix.translate(x, y, 0f)
+        if (offsetX != 0f || offsetY != 0f) matrix.translate(offsetX, offsetY, 0f)
+        if (scale != 1f) matrix.scale(scale, scale, 1f)
+        //#endif
     }
 }

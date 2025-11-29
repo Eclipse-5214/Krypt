@@ -308,6 +308,7 @@ object DungeonAPI {
             if (tickCount % 5 != 0) return@registerIn
 
             inBoss = floor != null && KnitPlayer.player?.let {
+                if (inBoss) return@let true
                 val (x, z) = WorldScanUtils.realCoordToComponent(it.x.toInt(), it.z.toInt())
                 6 * z + x > 35
             } == true
