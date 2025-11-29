@@ -53,8 +53,8 @@ object LividSolver : Feature(
         var entity: Player? = null
     }
 
-    private val highlightLividColor by ConfigDelegate<Color>("highlightLivid.color")
-    private val highlightLividLine by ConfigDelegate<Boolean>("highlightLivid.line")
+    private val lividSolverColor by ConfigDelegate<Color>("lividSolver.color")
+    private val lividSolverLine by ConfigDelegate<Boolean>("lividSolver.line")
 
     override fun addConfig() {
         ConfigManager
@@ -89,28 +89,27 @@ object LividSolver : Feature(
 
             if (currentLivid.entity == entity && player?.hasLineOfSight(entity) == true) {
                 entity.glowThisFrame = true
-                entity.glowingColor = highlightLividColor.rgb
+                entity.glowingColor = lividSolverColor.rgb
             }
         }
 
         createCustomEvent<RenderEvent.World.Last>("renderLine") { event ->
             currentLivid.entity?.let { entity ->
-                if (player?.hasLineOfSight(entity) == true) {
-                    Render3D.drawLineToEntity(
-                        entity,
-                        event.context.consumers(),
-                        event.context.matrixStack(),
-                        highlightLividColor.toFloatArray(),
-                        highlightLividColor.alpha.toFloat()
-                    )
-                }
+                Render3D.drawLineToEntity(
+                    entity,
+                    event.context.consumers(),
+                    event.context.matrixStack(),
+                    lividSolverColor.toFloatArray(),
+                    lividSolverColor.alpha.toFloat()
+                )
             }
         }
 
         register<WorldEvent.BlockUpdate> { event ->
             if (event.pos != lividPos) return@register
 
-            currentLivid = Livid.entries.find { it.block.defaultBlockState() == event.new.block.defaultBlockState() } ?: return@register
+            currentLivid = Livid.entries.find { it.block.defaultBlockState() == event.new.block.defaultBlockState() }
+                ?: return@register
             registerRender()
         }
 
@@ -133,7 +132,7 @@ object LividSolver : Feature(
 
     private fun registerRender() {
         registerEvent("renderLivid")
-        if (highlightLividLine) registerEvent("renderLine")
+        if (lividSolverLine) registerEvent("renderLine")
     }
 
     private fun unregisterRender() {
