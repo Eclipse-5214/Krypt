@@ -1,16 +1,23 @@
 package xyz.meowing.krypt.features.waypoints
 
+import xyz.meowing.knit.api.KnitClient
 import xyz.meowing.krypt.api.dungeons.DungeonAPI
-import xyz.meowing.krypt.config.ConfigDelegate
+import xyz.meowing.krypt.api.dungeons.enums.map.Checkmark
 import xyz.meowing.krypt.events.core.RenderEvent
+import xyz.meowing.krypt.features.waypoints.DungeonWaypoints.onlyRenderAfterClear
+import xyz.meowing.krypt.features.waypoints.DungeonWaypoints.stopRenderAfterGreen
+import xyz.meowing.krypt.features.waypoints.DungeonWaypoints.textRenderDistance
+import xyz.meowing.krypt.features.waypoints.DungeonWaypoints.textScale
+import xyz.meowing.krypt.utils.Utils.equalsOneOf
 import xyz.meowing.krypt.utils.rendering.Render3D
 
 object WaypointRenderer {
-    private val renderText by ConfigDelegate<Boolean>("dungeonWaypoints.renderText")
-    private val textScale by ConfigDelegate<Double>("dungeonWaypoints.textScale")
-
     fun render(event: RenderEvent.World.Last) {
         val room = DungeonAPI.currentRoom ?: return
+
+        if (stopRenderAfterGreen && room.checkmark == Checkmark.GREEN) return
+        if (onlyRenderAfterClear && !room.checkmark.equalsOneOf(Checkmark.WHITE, Checkmark.GREEN)) return
+
         val waypoints = RoomWaypointHandler.getWaypoints(room) ?: return
 
         val matrices = event.context.matrixStack()
@@ -59,9 +66,12 @@ object WaypointRenderer {
                 }
             }
 
-            if (renderText) {
+            if (DungeonWaypoints.renderText) {
                 val title = waypoint.title ?: if (waypoint.type == WaypointType.START) "Start" else return@forEach
                 val center = block.center.add(0.0, 0.1 * textScale, 0.0)
+                val player = KnitClient.player ?: return@forEach
+
+                if (player.position().distanceTo(center) >= textRenderDistance) return@forEach
 
                 Render3D.drawString(
                     title,

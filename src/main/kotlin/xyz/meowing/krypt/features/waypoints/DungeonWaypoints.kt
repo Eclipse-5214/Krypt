@@ -31,6 +31,12 @@ object DungeonWaypoints : Feature(
     val overrideColors by ConfigDelegate<Boolean>("dungeonWaypoints.overrideColors")
     val overrideOnSave by ConfigDelegate<Boolean>("dungeonWaypoints.overrideOnSave")
 
+    val onlyRenderAfterClear by ConfigDelegate<Boolean>("dungeonWaypoints.onlyRenderAfterClear")
+    val stopRenderAfterGreen by ConfigDelegate<Boolean>("dungeonWaypoints.stopRenderAfterGreen")
+    val renderText by ConfigDelegate<Boolean>("dungeonWaypoints.renderText")
+    val textRenderDistance by ConfigDelegate<Double>("dungeonWaypoints.textRenderDistance")
+    val textScale by ConfigDelegate<Double>("dungeonWaypoints.textScale")
+
     val startColor by ConfigDelegate<Color>("dungeonWaypoints.startColor")
     val mineColor by ConfigDelegate<Color>("dungeonWaypoints.mineColor")
     val superBoomColor by ConfigDelegate<Color>("dungeonWaypoints.superboomColor")
@@ -51,6 +57,20 @@ object DungeonWaypoints : Feature(
                 )
             )
             .addFeatureOption(
+                "Only render after clear",
+                ConfigElement(
+                    "dungeonWaypoints.onlyRenderAfterClear",
+                    ElementType.Switch(false)
+                )
+            )
+            .addFeatureOption(
+                "Stop render after green",
+                ConfigElement(
+                    "dungeonWaypoints.stopRenderAfterGreen",
+                    ElementType.Switch(true)
+                )
+            )
+            .addFeatureOption(
                 "Render text",
                 ConfigElement(
                     "dungeonWaypoints.renderText",
@@ -62,6 +82,13 @@ object DungeonWaypoints : Feature(
                 ConfigElement(
                     "dungeonWaypoints.textScale",
                     ElementType.Slider(0.1, 4.0, 1.0, false)
+                )
+            )
+            .addFeatureOption(
+                "Text render distance",
+                ConfigElement(
+                    "dungeonWaypoints.textRender",
+                    ElementType.Slider(1.0, 20.0, 10.0, false)
                 )
             )
             .addFeatureOption(
