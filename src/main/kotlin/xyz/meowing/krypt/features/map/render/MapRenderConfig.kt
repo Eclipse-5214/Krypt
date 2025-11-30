@@ -9,6 +9,7 @@
         val playerHeadsUnder by ConfigDelegate<Boolean>("dungeonMap.playerHeadsUnder")
         val iconClassColors by ConfigDelegate<Boolean>("dungeonMap.iconClassColors")
         val playerIconBorderColor by ConfigDelegate<Color>("dungeonMap.playerIconBorderColor")
+        val playerIconSize by ConfigDelegate<Double>("dungeonMap.playerIconSize")
         val playerIconBorderSize by ConfigDelegate<Double>("dungeonMap.playerIconBorderSize")
         val showOwnPlayer by ConfigDelegate<Boolean>("dungeonMap.showOwnPlayer")
         val showPlayerNametags by ConfigDelegate<Boolean>("dungeonMap.showPlayerNametags")

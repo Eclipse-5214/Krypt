@@ -95,6 +95,13 @@ object DungeonMap : Feature(
                 )
             )
             .addFeatureOption(
+                "Player icon size",
+                ConfigElement(
+                    "dungeonMap.playerIconSize",
+                    ElementType.Slider(0.1, 2.0, 1.0, true)
+                )
+            )
+            .addFeatureOption(
                 "Player icon border color",
                 ConfigElement(
                     "dungeonMap.playerIconBorderColor",

@@ -41,14 +41,16 @@ object PlayerLayer {
     private fun renderPlayerIcon(context: GuiGraphics, player: DungeonPlayer, x: Double, y: Double, rotation: Float, isOwnPlayer: Boolean) {
         context.pushPop {
             val matrix = context.pose()
+            val scale = MapRenderConfig.playerIconSize.toFloat()
+
             //#if MC >= 1.21.8
             //$$ matrix.translate(x.toFloat(), y.toFloat())
             //$$ matrix.rotate((rotation * (PI / 180)).toFloat())
-            //$$ matrix.scale(1f, 1f)
+            //$$ matrix.scale(scale, scale)
             //#else
             matrix.translate(x.toFloat(), y.toFloat(), 0f)
             matrix.mulPose(Axis.ZP.rotationDegrees(rotation))
-            matrix.scale(1f, 1f, 1f)
+            matrix.scale(scale, scale, 1f)
             //#endif
 
             val showAsArrow = MapRenderConfig.showOnlyOwnHeadAsArrow && !isOwnPlayer
